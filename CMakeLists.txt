@@ -475,6 +475,26 @@ target_link_libraries(function_source PRIVATE qjs)
 # Examples
 #
 
+# QuickJS Sandbox library
+#
+
+add_library(qjs-sandbox STATIC quickjs-sandbox.c)
+target_compile_definitions(qjs-sandbox PRIVATE ${qjs_defines})
+target_link_libraries(qjs-sandbox PRIVATE qjs)
+target_include_directories(qjs-sandbox PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# QuickJS Sandboxed CLI
+#
+
+add_executable(qjs-sandbox-cli
+    qjs-sandbox-cli.c
+)
+target_compile_definitions(qjs-sandbox-cli PRIVATE ${qjs_defines})
+target_link_libraries(qjs-sandbox-cli PRIVATE qjs-sandbox qjs)
+
 if(QJS_BUILD_EXAMPLES)
     if(WIN32 AND NOT (QJS_LIB_TYPE STREQUAL "SHARED_LIBRARY"))
         message(AUTHOR_WARNING
@@ -484,6 +504,14 @@ if(QJS_BUILD_EXAMPLES)
             "Please use \"-DBUILD_SHARED_LIBS=true\" if possible."
         )
     endif()
+
+    # Sandbox example
+    add_executable(sandbox-example
+        examples/sandbox-example.c
+    )
+    target_include_directories(sandbox-example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_compile_definitions(sandbox-example PRIVATE ${qjs_defines})
+    target_link_libraries(sandbox-example PRIVATE qjs-sandbox qjs)
 
     add_executable(hello
         gen/hello.c
